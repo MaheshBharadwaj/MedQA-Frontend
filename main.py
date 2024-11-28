@@ -1,27 +1,78 @@
 import streamlit as st
 from streamlit_mic_recorder import mic_recorder
 import openai
-
-from constants import MAX_CHAT_HISTORY, OPENAI_API_KEY
+import requests
+from constants import MAX_CHAT_HISTORY, OPENAI_API_KEY, LOGIN_URL, BACKEND_URL
 from sidebar import get_sidebar
 from utils import *
 from datetime import datetime
+from time import sleep
+
+from services import *
 
 openai.api_key = OPENAI_API_KEY
 openai_client = openai.Client()
 
+from google_auth_oauthlib.flow import Flow
+from constants import CLIENT_SECRETS_FILE, SCOPES, REDIRECT_URI, BACKEND_URL
+
 st.set_page_config(page_title="Medical QA Assistant")
+
+user_service = UserService(BACKEND_URL)
+chat_service = ChatService(BACKEND_URL)
+file_service = FileService(BACKEND_URL)
+# message_service = MessageService(BACKEND_URL)
+llm_service = LLMService(BACKEND_URL)
+
+st.session_state["user_service"] = user_service
+st.session_state["chat_service"] = chat_service
+st.session_state["file_service"] = file_service
+# st.session_state["message_service"] = message_service
+st.session_state["llm_service"] = llm_service
+
+
+
+if st.query_params.get("code"):
+    auth_code = st.query_params.get('code')
+    st.query_params.clear()
+    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES, redirect_uri=REDIRECT_URI)
+    auth = flow.fetch_token(code=auth_code)
+    id_token = auth['id_token']
+    response = requests.post(f"{LOGIN_URL}", json={"code": id_token})
+    if response.status_code != 200:
+        st.error("Error logging in. Please try again!")
+        with st.expander:
+            st.write(response.text)
+        st.stop()
+    response = response.json()
+    token = response["access_token"]
+    user_service.set_auth_token(token)
+    chat_service.set_auth_token(token)
+    file_service.set_auth_token(token)
+    # message_service.set_auth_token(token)
+    llm_service.set_auth_token(token)
+    user = response["user"]
+    st.session_state["user"] = user
+    st.session_state["token"] = token
+
+    if not user["name"]:
+        st.switch_page("pages/register.py")
+
+    st.info(f"Login successfull!")
+    sleep(0.7)
+    st.rerun()
+
+if st.session_state.get("user") is None:
+    st.switch_page("pages/login.py")
 
 get_sidebar()
 
-# Initialize session state
 if "openai_client" not in st.session_state:
     st.session_state["openai_client"] = openai_client
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
 if "page_state" not in st.session_state:
-    print("Setting welcome state")
-    st.session_state["page_state"] = "welcome"  # Can be: welcome, new_chat, conversation
+    st.session_state["page_state"] = "welcome"
 if "chat_title" not in st.session_state:
     st.session_state["chat_title"] = None
 
@@ -31,7 +82,8 @@ def reset_chat_state():
     st.session_state["chat_title"] = None
 
 def show_welcome_page():
-    st.title("Welcome to Medical QA Assistant")
+    user = st.session_state["user"]
+    st.title(f"Welcome to Medical QA Assistant, {user['name']}!")
     st.write("""
     👋 Welcome to your medical assistant! I'm here to help answer your medical questions 
     and provide reliable information based on your health history and concerns.
@@ -76,25 +128,20 @@ def show_new_chat_page():
             combined_message = f"Patient History:\n{patient_history}\n\nQuestion:\n{medical_query}"
             st.session_state["messages"] = [{"role": "user", "content": combined_message}]
             
-            # Switch to conversation state
             st.session_state["page_state"] = "conversation"
             st.rerun()
 
 def show_conversation_page():
-    # Display chat title at the top
     st.title(st.session_state["chat_title"] or "Medical Consultation")
     
-    # Chat history area with improved styling
     chat_container = st.container()
     with chat_container:
         for message in st.session_state["messages"]:
             with st.chat_message(message["role"].lower()):
                 st.markdown(message["content"])
     
-    # Input area at the bottom
     st.divider()
     
-    # Create two columns for text input and voice input
     col1, col2 = st.columns([8, 1])
     
     with col1:
@@ -160,6 +207,8 @@ def get_sidebar():
                 st.session_state["chat_title"] = chat['title']
                 st.session_state["page_state"] = "conversation"
                 st.rerun()
+
+
 if st.session_state["page_state"] == "welcome":
     show_welcome_page()
 elif st.session_state["page_state"] == "new_chat":
