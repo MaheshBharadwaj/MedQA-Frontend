@@ -102,38 +102,48 @@ def show_welcome_page():
 
 def show_new_chat_page():
     st.title("Start New Conversation")
-    
-    with st.form("new_chat_form"):
-        patient_history = st.text_area(
-            "Patient History/Medical Background",
-            help="Please provide relevant medical history, current medications, or any ongoing conditions.",
-            height=150
-        )
-        
-        medical_query = st.text_area(
-            "Medical Question",
-            help="What would you like to ask about?",
-            height=100
-        )
-        
-        submit_button = st.form_submit_button("Start Conversation")
-        
-        if submit_button:
-            if not medical_query.strip():
-                st.error("Please enter your medical question.")
-                return
+    patient_history = st.text_area(
+        "Patient History/Medical Background",
+        value=st.session_state.get("patient_history", ""),
+        height=150
+    )
+    audio = mic_recorder(
+        start_prompt="Record Notes 🎤",
+        stop_prompt="Stop ⏹️",
+        just_once=True,
+        use_container_width=True
+    )
+    if audio:
+        patient_data = speech_to_text(audio)
+        st.session_state["patient_history"] = patient_data
+        st.rerun()
 
-            set_chat_title(patient_history, medical_query)
-            
-            combined_message = f"Patient History:\n{patient_history}\n\nQuestion:\n{medical_query}"
-            st.session_state["messages"] = [{"role": "user", "content": combined_message}]
-            
-            st.session_state["page_state"] = "conversation"
-            st.rerun()
+    
+    medical_query = st.text_area(
+        "Medical Question",
+        help="What would you like to ask about?",
+        value="Is this patient appropriate for inpatient or out patient surgery?",
+        height=100
+    )
+    
+    submit_button = st.button("Start Conversation")
+        
+    if submit_button:
+        if not medical_query.strip():
+            st.error("Please enter your medical question.")
+            return
+
+        set_chat_title(patient_history, medical_query)
+        
+        combined_message = f"Patient History:\n{patient_history}\n\nQuestion:\n{medical_query}"
+        st.session_state["messages"] = [{"role": "user", "content": combined_message}]
+        
+        st.session_state["page_state"] = "conversation"
+        st.rerun()
 
 def show_conversation_page():
     st.title(st.session_state["chat_title"] or "Medical Consultation")
-    
+    st.session_state["patient_history"] = None
     chat_container = st.container()
     with chat_container:
         for message in st.session_state["messages"]:
