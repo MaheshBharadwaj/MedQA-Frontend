@@ -18,19 +18,29 @@ from constants import CLIENT_SECRETS_FILE, SCOPES, REDIRECT_URI, BACKEND_URL
 
 st.set_page_config(page_title="Medical QA Assistant")
 
-user_service = UserService(BACKEND_URL)
-chat_service = ChatService(BACKEND_URL)
-file_service = FileService(BACKEND_URL)
-# message_service = MessageService(BACKEND_URL)
-llm_service = LLMService(BACKEND_URL)
+if not st.session_state.get("user_service"):
+    user_service = UserService(BACKEND_URL)
+    st.session_state["user_service"] = user_service
+else:
+    user_service = st.session_state["user_service"]
 
-st.session_state["user_service"] = user_service
-st.session_state["chat_service"] = chat_service
-st.session_state["file_service"] = file_service
-# st.session_state["message_service"] = message_service
-st.session_state["llm_service"] = llm_service
+if not st.session_state.get("chat_service"):
+    chat_service = ChatService(BACKEND_URL)
+    st.session_state["chat_service"] = chat_service
+else:
+    chat_service = st.session_state["chat_service"]
 
+if not st.session_state.get("file_service"):
+    file_service = FileService(BACKEND_URL)
+    st.session_state["file_service"] = file_service
+else:
+    file_service = st.session_state["file_service"]
 
+if not st.session_state.get("llm_service"):
+    llm_service = LLMService(BACKEND_URL)
+    st.session_state["llm_service"] = llm_service
+else:
+    llm_service = st.session_state["llm_service"]
 
 if st.query_params.get("code"):
     auth_code = st.query_params.get('code')
@@ -137,7 +147,7 @@ def show_new_chat_page():
         
         combined_message = f"Patient History:\n{patient_history}\n\nQuestion:\n{medical_query}"
         st.session_state["messages"] = [{"role": "user", "content": combined_message}]
-        
+        chat_service.create_chat(st.session_state["chat_title"], "gpt")
         st.session_state["page_state"] = "conversation"
         st.rerun()
 
