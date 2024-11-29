@@ -6,11 +6,15 @@ def get_sidebar():
 
     with st.sidebar:
         st.title("MED QA")
-        if st.button("Logout", use_container_width=True):
-             st.switch_page("pages/logout.py")
-        if st.button("New Chat", use_container_width=True):
-                st.session_state["page_state"] = "new_chat"
-                st.rerun()
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            if st.button("Home 🏠", use_container_width=True):
+                st.switch_page("main.py")
+        with c2:
+            if st.button("Logout 🔓", use_container_width=True):
+                st.switch_page("pages/logout.py")
+        if st.button("New Chat 💬", use_container_width=True):
+            st.switch_page("pages/new_chat.py")
 
         st.divider()
         
@@ -23,6 +27,5 @@ def get_sidebar():
                 key=chat['chat_id'],
                 use_container_width=True
             ):
-                st.session_state["current_chat"] = chat['chat_id']
-                st.session_state["show_chat_form"] = False
-                st.rerun()
+                st.session_state["current_chat_id"] = chat['chat_id']
+                st.switch_page("pages/chat.py")

@@ -1,6 +1,6 @@
 # api/base_service.py
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 class BaseService:
     def __init__(self, base_url: str = "http://127.0.0.1:5000"):
@@ -71,7 +71,7 @@ class ChatService(BaseService):
         response = self.session.get(endpoint, params=params)
         return self._handle_response(response)
     
-    def add_message(self, chat_id: str, content: str, role: str, files: Optional[list] = None) -> Dict:
+    def add_message(self, chat_id: str, role: str, content: str, files: Optional[list] = None) -> Dict:
         endpoint = f"{self.base_url}/chats/{chat_id}/messages"
         data = {
             "content": content,
@@ -82,14 +82,11 @@ class ChatService(BaseService):
         response = self.session.post(endpoint, json=data)
         return self._handle_response(response)
     
-    def get_messages(self, chat_id: str, limit: int = 50, before: Optional[str] = None, include_files: bool = False) -> Dict:
+    def get_messages(self, chat_id: str, include_files: bool = False) -> Dict:
         endpoint = f"{self.base_url}/chats/{chat_id}/messages"
         params = {
-            "limit": limit,
             "include_files": include_files
         }
-        if before:
-            params["before"] = before
         response = self.session.get(endpoint, params=params)
         return self._handle_response(response)
     
@@ -122,12 +119,10 @@ class FileService(BaseService):
         self._handle_response(response)
 
 class LLMService(BaseService):
-    def get_completion(self, model_type: str, message: str, context_messages: Optional[list] = None) -> Dict:
-        endpoint = f"{self.base_url}/llm/completion"
+    def get_completion(self, messages: List[Dict[str, Any]]) -> Dict:
+        endpoint = f"{self.base_url}/llm/rag"
         data = {
-            "model_type": model_type,
-            "message": message,
-            "context_messages": context_messages
+            "messages": messages,
         }
         response = self.session.post(endpoint, json=data)
         return self._handle_response(response)
