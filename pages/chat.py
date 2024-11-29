@@ -54,7 +54,7 @@ with col2:
             st.session_state["messages"].append({
                 "role": "user", "content": prompt
             })
-            chat_service.add_message(st.session_state["current_chat_id"], "user", user_input)
+            chat_service.add_message(st.session_state["current_chat_id"], "user", prompt)
             try:
                 response = llm_service.get_completion(st.session_state["messages"])["response"]
             except Exception as e:
