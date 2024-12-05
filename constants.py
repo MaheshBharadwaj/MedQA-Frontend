@@ -16,3 +16,5 @@ CHAT_TITLE_PROMPT = f"""Based on the following patient information and medical q
     Format: Keep it in the format 'Patient Topic - Concern'
 
     Patient Information:"""
+
+DEFAULT_PATIENT_HISTORY = "Patient is a 94 year old man who is scheduled for laparoscopic cholecystectomy. His BMI is 34. He has a history of end-stage renal disease on intermittent dialysis who receives it every Monday, Wednesday, and Saturday. In addition, he has a history of well-controlled hypertension and insulin-dependent diabetes."

@@ -119,8 +119,11 @@ class FileService(BaseService):
         self._handle_response(response)
 
 class LLMService(BaseService):
-    def get_completion(self, messages: List[Dict[str, Any]]) -> Dict:
-        endpoint = f"{self.base_url}/llm/rag"
+    def get_completion(self, messages: List[Dict[str, Any]], mode="RAG") -> Dict:
+        if mode == "RAG":
+            endpoint = f"{self.base_url}/llm/rag"
+        else:
+            endpoint = f"{self.base_url}/llm/vanilla"
         data = {
             "messages": messages,
         }

@@ -2,7 +2,10 @@ import streamlit as st
 from constants import MAX_CHAT_HISTORY
 
 def get_sidebar():
-    chat_service = st.session_state["chat_service"]
+    try:
+        chat_service = st.session_state["chat_service"]
+    except KeyError:
+        st.switch_page("pages/login.py")
 
     with st.sidebar:
         st.title("MED QA")

@@ -8,9 +8,9 @@ get_sidebar()
 
 llm_service = st.session_state["llm_service"]
 chat_service = st.session_state["chat_service"]
+mode = st.session_state["llm_mode"]
 
 st.title(st.session_state["chat_title"] or "Medical Consultation")
-st.session_state["patient_history"] = None
 chat_container = st.container()
 with chat_container:
     messages = chat_service.get_messages(st.session_state["current_chat_id"])["messages"]
@@ -29,7 +29,7 @@ with col1:
         st.session_state["messages"].append({"role": "user", "content": user_input})
         chat_service.add_message(st.session_state["current_chat_id"], "user", user_input)
         try:
-            response = llm_service.get_completion(st.session_state["messages"])["response"]
+            response = llm_service.get_completion(st.session_state["messages"], mode=mode)["response"]
         except Exception as e:
             response = f"An error occurred! Please try again later"
             with st.expander("See error"):
@@ -56,7 +56,7 @@ with col2:
             })
             chat_service.add_message(st.session_state["current_chat_id"], "user", prompt)
             try:
-                response = llm_service.get_completion(st.session_state["messages"])["response"]
+                response = llm_service.get_completion(st.session_state["messages"], mode=mode)["response"]
             except Exception as e:
                 response = f"An error occurred! Please try again later"
                 with st.expander("See error"):
