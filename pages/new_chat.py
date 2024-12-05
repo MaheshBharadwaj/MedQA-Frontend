@@ -17,6 +17,7 @@ except KeyError:
 
 if "patient_history" not in st.session_state or st.session_state["patient_history"] is None:
     st.session_state["patient_history"] = DEFAULT_PATIENT_HISTORY
+st.session_state["llm_mode"] = "RAG"
 
 c1, c2 = st.columns([1, 1])
 with c1:
@@ -26,10 +27,8 @@ with c1:
         index=0,
         placeholder="Select the variant",
     )
-    if option == "RAG":
-        st.session_state["llm_service"] == "RAG"
-    else:
-        st.session_state["llm_service"] == "Vanilla"
+    if option == "Vanilla":
+        st.session_state["llm_mode"] = "Vanilla"
 
 with c2:
     provider = st.selectbox(
