@@ -15,7 +15,7 @@ html_content = f"""
         </div>
         """
 
-st.title("Welcome to Medical QA Assistant")
+st.title("Welcome to SurgiChoice")
 st.divider()
 st.markdown("### Login with Google")
 st.markdown(html_content, unsafe_allow_html=True)
