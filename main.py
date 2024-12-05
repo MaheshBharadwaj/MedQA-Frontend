@@ -16,7 +16,7 @@ openai_client = openai.Client()
 from google_auth_oauthlib.flow import Flow
 from constants import CLIENT_SECRETS_FILE, SCOPES, REDIRECT_URI, BACKEND_URL
 
-st.set_page_config(page_title="Medical QA Assistant")
+st.set_page_config(page_title="SurgiChoice")
 
 if not st.session_state.get("user_service"):
     user_service = UserService(BACKEND_URL)
@@ -88,7 +88,7 @@ if "chat_title" not in st.session_state:
 
 
 user = st.session_state["user"]
-st.title(f"Welcome to Medical QA Assistant, {user['name']}!")
+st.title(f"Welcome to SurgiChoice, {user['name']}!")
 st.write("""
 👋 Welcome to your medical assistant! I'm here to help answer your medical questions 
 and provide reliable information based on your health history and concerns.

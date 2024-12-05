@@ -8,7 +8,7 @@ def get_sidebar():
         st.switch_page("pages/login.py")
 
     with st.sidebar:
-        st.title("MED QA")
+        st.title("SurgiChoice")
         c1, c2 = st.columns([1, 1])
         with c1:
             if st.button("Home 🏠", use_container_width=True):
