@@ -8,9 +8,13 @@ get_sidebar()
 
 llm_service = st.session_state["llm_service"]
 chat_service = st.session_state["chat_service"]
-mode = st.session_state["llm_mode"]
+if "llm_mode" not in st.session_state:
+    mode = "RAG"
+    st.session_state["llm_mode"] = mode
+mode = st.session_state["llm_mode"] or "RAG"
 
-st.title(st.session_state["chat_title"] or "Medical Consultation")
+chat = chat_service.get_chat(st.session_state["current_chat_id"])
+st.title(chat["title"] if chat else "Medical Consultation")
 chat_container = st.container()
 with chat_container:
     messages = chat_service.get_messages(st.session_state["current_chat_id"])["messages"]
